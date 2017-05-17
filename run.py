@@ -7,7 +7,6 @@ prefix = ["?", "//"]
 initial_extensions = ['cogs.general',
                       'cogs.fun',
                       'cogs.mod',
-                      'cogs.nsfw'
                       ]
 
 # https://bot.discord.io/reinbow

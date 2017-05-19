@@ -4,9 +4,6 @@ from discord.ext import commands
 import asyncio
 from .utils import checks
 
-#<"312689852023832578"> ID for @DoorManager
-#<"309477572671045641"> ID for @everyone
-
 class Mod:
     """Mod tools"""
 

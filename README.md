@@ -7,6 +7,10 @@ When adding it give it full permissions given in the OAuth to have the bot work 
 
 ### Official Discord
 [Discord.io/doorsquad](https://discord.io/doorsquad)
+
+### Hosting
+If you want to self-host it look at the requirements of the bot listed bellow. Otherwise just add it via the OAuth link to your server.
+
 ### Discord Usage
 * For NSFW's commands a 'NSFW' role is required
 * For non-Administrators to use the bot fully a 'Bot Admin' role is required

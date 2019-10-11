@@ -152,7 +152,7 @@ class General:
         user_joined = joined_at.strftime("%d %b %Y %H:%M")
         joined_on = "{}".format(user_joined)
 
-        args = ''.join(reason)
+        #args = ''.join(reason)
         adminlist = []
         check = lambda r: r.name in 'Bot Admin'
 

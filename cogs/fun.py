@@ -1,8 +1,8 @@
 import discord
 import aiohttp
 from discord.ext import commands
-from random import choice
-from .utils.dataIO import dataIO
+from random import choice, randint
+from cogs.utils.dataIO import DataIO
 from urllib.parse import urlencode
 
 
@@ -14,6 +14,8 @@ class Fun:
         self.bot = bot
         self.memes = "data/memes.json"
         self.pepes = "data/pepes.json"
+
+        dataIO = DataIO() 
         self.system_memes = dataIO.load_json(self.memes)
         self.system_pepes = dataIO.load_json(self.pepes)
         self.ball = ["As I see it, yes", "It is certain", "Most likely", "Me llamo Jeff", "I like doors", "Can I F*CK a door plz?", "You’re definitely going to die alone",
@@ -26,7 +28,7 @@ class Fun:
     async def _ball(self, *args):
         """Ask the 8 Ball a question"""
         print(args)
-        answer = random.randint(0, len(self.ball) - 1)
+        answer = randint(0, len(self.ball) - 1)
         await self.bot.say(self.ball[answer])
 
     @commands.command(name="say", aliases=["sey"])
@@ -54,7 +56,8 @@ class Fun:
     @commands.command(name="badmeme", pass_context=True)
     async def _badmeme(self):
         """Sends a stale meme"""
-        async with aiohttp.get("https://api.imgflip.com/get_memes") as r:
+        session = aiohttp.ClientSession()
+        async with session.get("https://api.imgflip.com/get_memes") as r:
             result = await r.json()
             url = choice(result["data"]["memes"])
             url = url["url"]
@@ -63,7 +66,8 @@ class Fun:
     @commands.command(name="durv", pass_context=True)
     async def _durv(self):
         """Durv's latest video"""
-        async with aiohttp.get("https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=1&playlistId=UUsNU-z2Nxsm5xfSusglV9Zw&key=AIzaSyANeKzjbCdfm9LapeIzVUgCwQV3SemYpgE") as r:
+        session = aiohttp.ClientSession()
+        async with session.get("https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=1&playlistId=UUsNU-z2Nxsm5xfSusglV9Zw&key=AIzaSyANeKzjbCdfm9LapeIzVUgCwQV3SemYpgE") as r:
             result = await r.json()
             url = result["items"][0]
             url = url["snippet"]
@@ -78,7 +82,8 @@ class Fun:
         if text is None:
             url = 'http://api.giphy.com/v1/gifs/random?&api_key=dc6zaTOxFJmzC'
 
-            async with aiohttp.get(url) as r:
+            session = aiohttp.ClientSession()
+            async with session.get(url) as r:
                 result = await r.json()
                 data = result["data"]
                 data = data["image_url"]
@@ -88,7 +93,8 @@ class Fun:
             print(text)
             url = ("http://api.giphy.com/v1/gifs/search?q{}&api_key=dc6zaTOxFJmzC".format(urlencode({'': ''.join(text)})))
 
-            async with aiohttp.get(url) as r:
+            session = aiohttp.ClientSession()
+            async with session.get(url) as r:
                 result = await r.json()
                 if len(result["data"]) == 0:
                     await self.bot.say(":warning: No results came up for your search!")
@@ -105,7 +111,8 @@ class Fun:
         search_query = "+".join(search_query)
         url = "http://api.urbandictionary.com/v0/define?term=" + search_query
 
-        async with aiohttp.get(url) as data:
+        session = aiohttp.ClientSession()
+        async with session.get(url) as data:
             result = await data.json()
 
         if result["list"]:

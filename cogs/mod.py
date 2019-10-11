@@ -2,7 +2,8 @@
 import discord
 from discord.ext import commands
 import asyncio
-from .utils import checks
+
+from cogs.utils import checks
 
 class Mod:
     """Mod tools"""
@@ -139,7 +140,7 @@ class Mod:
     async def _mute(self, ctx, user: discord.User):
         """Mute a user"""
         author = ctx.message.author
-        server = ctx.message.server
+        #server = ctx.message.server
 
         if author == user:
             await self.bot.say(":no_entry_sign: You cannot mute yourself!")
@@ -175,7 +176,7 @@ class Mod:
     async def _botban(self, ctx, user: discord.User):
         """Ban user from using the bot"""
         author = ctx.message.author
-        server = ctx.message.server
+        #server = ctx.message.server
 
         if author == user:
             await self.bot.say(":no_entry_sign: You cannot mute yourself!")

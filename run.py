@@ -29,19 +29,20 @@ async def on_ready():
     print("Logged in as: " + bot.user.name)
     print("Client ID: " + bot.user.id)
     print("---------------------------------------------\nBot by TeaSeaPea (mzk)\n---------------------------------------------")
-    await bot.change_presence(game=discord.Game(name='?help'))
+    game = discord.Game("?help")
+    await bot.change_presence(activity=game)
 
 @bot.event
 async def on_server_join(server):
     default = server.default_channel
-    await bot.send_message(default, hello_msg)
+    await default.send_message(hello_msg)
 
 @bot.event
 async def on_member_join(member):
     svr = get_server_name(member.server)
     default = get_welcome_channel(member.server)
     joinmessage = "{}\nWelcome to **{}**".format(member.mention, svr)
-    await bot.send_message(default, joinmessage)
+    await default.send_message(joinmessage)
 
 
 for extension in initial_extensions:

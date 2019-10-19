@@ -1,19 +1,21 @@
 import discord
 import aiohttp
 from discord.ext import commands
-from random import choice
-from .utils.dataIO import dataIO
+from random import choice, randint
+from cogs.utils.dataIO import DataIO
 from urllib.parse import urlencode
 
 
 
-class Fun:
+class Fun(commands.Cog):
     """Commands used 4Fun"""
 
     def __init__(self, bot):
         self.bot = bot
         self.memes = "data/memes.json"
         self.pepes = "data/pepes.json"
+
+        dataIO = DataIO() 
         self.system_memes = dataIO.load_json(self.memes)
         self.system_pepes = dataIO.load_json(self.pepes)
         self.ball = ["As I see it, yes", "It is certain", "Most likely", "Me llamo Jeff", "I like doors", "Can I F*CK a door plz?", "You’re definitely going to die alone",
@@ -23,98 +25,103 @@ class Fun:
                      "Daddy Durv"]
 
     @commands.command(name="8ball", aliases=["8"])
-    async def _ball(self, *args):
+    async def _ball(self, ctx, *args):
         """Ask the 8 Ball a question"""
         print(args)
-        answer = random.randint(0, len(self.ball) - 1)
-        await self.bot.say(self.ball[answer])
+        answer = randint(0, len(self.ball) - 1)
+        await ctx.send(self.ball[answer])
 
     @commands.command(name="say", aliases=["sey"])
-    async def _say(self, *args):
+    async def _say(self, ctx, *args):
         """Says what you ask the bot to say"""
         print(args)
-        await self.bot.say(' '.join(args))
+        await ctx.send(' '.join(args))
 
     @commands.group(name="memes")
-    async def _memes(self, *args):
+    async def _memes(self, ctx, *args):
         """Sends a random meme"""
-        await self.bot.say(choice(self.system_memes["memes"]))
+        await ctx.send(choice(self.system_memes["memes"]))
 
     @commands.group(name="pepe")
-    async def _pepe(self, *args):
+    async def _pepe(self, ctx, *args):
         """Sends a random pepe"""
-        await self.bot.say(choice(self.system_pepes["pepes"]))
+        await ctx.send(choice(self.system_pepes["pepes"]))
 
     @commands.command(name="search", aliases=["scr"])
-    async def _search(self, *args):
+    async def _search(self, ctx, *args):
         """Searches google for your query"""
         print(args)
-        await self.bot.say("https://www.google.co.uk/search?{}".format(urlencode({'q': ' '.join(args)})))
+        await ctx.send("https://www.google.co.uk/search?{}".format(urlencode({'q': ' '.join(args)})))
 
     @commands.command(name="badmeme", pass_context=True)
-    async def _badmeme(self):
+    async def _badmeme(self, ctx):
         """Sends a stale meme"""
-        async with aiohttp.get("https://api.imgflip.com/get_memes") as r:
+        session = aiohttp.ClientSession()
+        async with session.get("https://api.imgflip.com/get_memes") as r:
             result = await r.json()
             url = choice(result["data"]["memes"])
             url = url["url"]
-            await self.bot.say(url)
+            await ctx.send(url)
 
     @commands.command(name="durv", pass_context=True)
-    async def _durv(self):
+    async def _durv(self, ctx):
         """Durv's latest video"""
-        async with aiohttp.get("https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=1&playlistId=UUsNU-z2Nxsm5xfSusglV9Zw&key=AIzaSyANeKzjbCdfm9LapeIzVUgCwQV3SemYpgE") as r:
+        session = aiohttp.ClientSession()
+        async with session.get("https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=1&playlistId=UUsNU-z2Nxsm5xfSusglV9Zw&key=AIzaSyANeKzjbCdfm9LapeIzVUgCwQV3SemYpgE") as r:
             result = await r.json()
             url = result["items"][0]
             url = url["snippet"]
             url = url["resourceId"]
             url = url["videoId"]
             url = "https://www.youtube.com/watch?v=" + url
-            await self.bot.say("**Here's Durv's Latest Video:**\n" + url)
+            await ctx.send("**Here's Durv's Latest Video:**\n" + url)
 
     @commands.command(name="giphy", aliases=['gif'])
-    async def _giphy(self, *, text: str = None):
+    async def _giphy(self, ctx, *, text: str = None):
         """Searches for random gif or for one you searched for"""
         if text is None:
             url = 'http://api.giphy.com/v1/gifs/random?&api_key=dc6zaTOxFJmzC'
 
-            async with aiohttp.get(url) as r:
+            session = aiohttp.ClientSession()
+            async with session.get(url) as r:
                 result = await r.json()
                 data = result["data"]
                 data = data["image_url"]
-                await self.bot.say(data)
+                await ctx.send(data)
         else:
             #text = ("".join(text))
             print(text)
             url = ("http://api.giphy.com/v1/gifs/search?q{}&api_key=dc6zaTOxFJmzC".format(urlencode({'': ''.join(text)})))
 
-            async with aiohttp.get(url) as r:
+            session = aiohttp.ClientSession()
+            async with session.get(url) as r:
                 result = await r.json()
                 if len(result["data"]) == 0:
-                    await self.bot.say(":warning: No results came up for your search!")
+                    await ctx.send(":warning: No results came up for your search!")
 
                 else:
                     data = choice(result["data"])
                     data = data["url"]
-                    await self.bot.say(data)
+                    await ctx.send(data)
 
     @commands.command(name="urban", aliases=["dict", "dictionary"])
-    async def _urban(self, *, search_query: str):
+    async def _urban(self, ctx, *, search_query: str):
         """Searches the urban dictionary for specified query"""
 
         search_query = "+".join(search_query)
         url = "http://api.urbandictionary.com/v0/define?term=" + search_query
 
-        async with aiohttp.get(url) as data:
+        session = aiohttp.ClientSession()
+        async with session.get(url) as data:
             result = await data.json()
 
         if result["list"]:
             definition = result['list'][0]['definition']
             msg = ("**Definition:**\n{}".format(definition))
-            await self.bot.say(msg)
+            await ctx.send(msg)
 
         else:
-            await self.bot.say("Your search gave no results!")
+            await ctx.send("Your search gave no results!")
 
 
 

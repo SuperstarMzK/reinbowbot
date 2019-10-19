@@ -1,4 +1,4 @@
-from .dataIO import dataIO
+import dataIO
 from copy import deepcopy
 import discord
 import os
@@ -24,20 +24,22 @@ class Settings:
                         "PREFIXES": []}
                         }
         self._memory_only = False
+        
+        self.dataIO = dataIO.DataIO()
 
-        if not dataIO.is_valid_json(self.path):
+        if not self.dataIO.is_valid_json(self.path):
             self.bot_settings = deepcopy(self.default_settings)
             self.save_settings()
         else:
-            current = dataIO.load_json(self.path)
+            current = self.dataIO.load_json(self.path)
             if current.keys() != self.default_settings.keys():
                 for key in self.default_settings.keys():
                     if key not in current.keys():
                         current[key] = self.default_settings[key]
                         print("Adding " + str(key) +
                               " field to red settings.json")
-                dataIO.save_json(self.path, current)
-            self.bot_settings = dataIO.load_json(self.path)
+                self.dataIO.save_json(self.path, current)
+            self.bot_settings = self.dataIO.load_json(self.path)
 
         if "default" not in self.bot_settings:
             self.update_old_settings_v1()
@@ -110,7 +112,7 @@ class Settings:
 
     def save_settings(self):
         if not self._memory_only:
-            dataIO.save_json(self.path, self.bot_settings)
+            self.dataIO.save_json(self.path, self.bot_settings)
 
     def update_old_settings_v1(self):
         # This converts the old settings format
@@ -196,13 +198,13 @@ class Settings:
     @property
     def default_admin(self):
         if "default" not in self.bot_settings:
-            self.update_old_settings()
+            self.update_old_settings_v1()
         return self.bot_settings["default"].get("ADMIN_ROLE", "")
 
     @default_admin.setter
     def default_admin(self, value):
         if "default" not in self.bot_settings:
-            self.update_old_settings()
+            self.update_old_settings_v1()
         self.bot_settings["default"]["ADMIN_ROLE"] = value
 
     @property
@@ -229,14 +231,14 @@ class Settings:
     def get_server(self, server):
         if server is None:
             return self.bot_settings["default"].copy()
-        assert isinstance(server, discord.Server)
+        assert isinstance(server, discord.Guild)
         return self.bot_settings.get(server.id,
                                      self.bot_settings["default"]).copy()
 
     def get_server_admin(self, server):
         if server is None:
             return self.default_admin
-        assert isinstance(server, discord.Server)
+        assert isinstance(server, discord.Guild)
         if server.id not in self.bot_settings:
             return self.default_admin
         return self.bot_settings[server.id].get("ADMIN_ROLE", "")
@@ -244,7 +246,7 @@ class Settings:
     def set_server_admin(self, server, value):
         if server is None:
             return
-        assert isinstance(server, discord.Server)
+        assert isinstance(server, discord.Guild)
         if server.id not in self.bot_settings:
             self.add_server(server.id)
         self.bot_settings[server.id]["ADMIN_ROLE"] = value
@@ -253,7 +255,7 @@ class Settings:
     def get_server_mod(self, server):
         if server is None:
             return self.default_mod
-        assert isinstance(server, discord.Server)
+        assert isinstance(server, discord.Guild)
         if server.id not in self.bot_settings:
             return self.default_mod
         return self.bot_settings[server.id].get("MOD_ROLE", "")
@@ -261,7 +263,7 @@ class Settings:
     def set_server_mod(self, server, value):
         if server is None:
             return
-        assert isinstance(server, discord.Server)
+        assert isinstance(server, discord.Guild)
         if server.id not in self.bot_settings:
             self.add_server(server.id)
         self.bot_settings[server.id]["MOD_ROLE"] = value
@@ -275,7 +277,7 @@ class Settings:
     def set_server_prefixes(self, server, prefixes):
         if server is None:
             return
-        assert isinstance(server, discord.Server)
+        assert isinstance(server, discord.Guild)
         if server.id not in self.bot_settings:
             self.add_server(server.id)
         self.bot_settings[server.id]["PREFIXES"] = prefixes
